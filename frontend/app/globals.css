@@ -246,6 +246,11 @@
   color: rgb(161, 161, 170) !important;
 }
 
+.dark input[type="date"],
+.dark input[type="time"] {
+  color-scheme: dark;
+}
+
 /* FullCalendar Overrides for Sleeker Look */
 .fc {
   /* Inherit Poppins from body — do not let FC default system fonts diverge */
@@ -416,6 +421,48 @@
 
 .fc .fc-col-header-cell.fc-day-today .fc-col-header-cell-cushion {
   color: hsl(var(--primary)) !important;
+}
+
+.timeora-calendar-shell {
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+}
+
+.timeora-calendar-shell .fc {
+  min-width: 100%;
+}
+
+@media (max-width: 767px) {
+  .timeora-calendar-shell[data-calendar-view="dayGridMonth"] .fc {
+    min-width: 42rem;
+  }
+
+  .timeora-calendar-shell[data-calendar-view="timeGridWeek"] .fc {
+    min-width: 48rem;
+  }
+
+  .timeora-calendar-shell[data-calendar-view="timeGridDay"] .fc {
+    min-width: 100%;
+  }
+
+  .timeora-calendar-shell .fc .fc-daygrid-day-frame {
+    min-height: 6rem;
+    padding: 0.125rem;
+  }
+
+  .timeora-calendar-shell .fc .fc-daygrid-day-number {
+    padding: 0.45rem 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+  }
+
+  .timeora-calendar-shell .fc .fc-timegrid-slot {
+    height: 52px;
+  }
+
+  .timeora-calendar-shell .fc .fc-col-header-cell {
+    padding: 8px 0 !important;
+  }
 }
 
 /* Timegrid Slot Label (Time in left column) */
@@ -665,4 +712,22 @@
 
 .dark .fc .fc-timegrid-now-indicator-line {
   border-color: #a78bfa !important;
+}
+
+/* Keep mobile month/week cells readable after the generic DayGrid overflow rules above. */
+@media (max-width: 767px) {
+  .timeora-calendar-shell .fc-daygrid-event {
+    min-height: 1.6rem !important;
+    margin: 1px 4px !important;
+    border-radius: 0.5rem !important;
+  }
+
+  .timeora-calendar-shell .fc-daygrid-event .fc-event-main {
+    padding: 3px 5px !important;
+  }
+
+  .timeora-calendar-shell .fc-daygrid-event .fc-event-title-container {
+    font-size: 0.6875rem;
+    line-height: 1.2;
+  }
 }

@@ -12,6 +12,13 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { AlertTriangle, Bell, Clock, CalendarIcon, Flag, Link, Users, Sparkles, Bookmark, Tag } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -79,6 +86,17 @@ function calculateEndTime(data: Partial<EventData>): string {
   end.setMinutes(end.getMinutes() + data.duration_minutes);
   return format(end, "HH:mm");
 }
+
+const NO_CATEGORY_VALUE = "__none__";
+const NO_REMINDER_VALUE = "__none__";
+
+const fieldLabelClassName =
+  "timeora-field-label flex items-center gap-2 text-left text-zinc-600 dark:text-zinc-300";
+
+const selectTriggerClassName =
+  "timeora-select-trigger min-h-12 w-full justify-between rounded-xl border-zinc-200 bg-white px-3.5 py-2.5 text-base font-medium text-slate-900 shadow-sm dark:border-white/10 dark:bg-zinc-950 dark:text-zinc-100 sm:min-h-10 sm:text-sm";
+
+const selectContentClassName = "timeora-select-content z-[80] bg-white dark:bg-zinc-950";
 
 export function EventDialog({
   open,
@@ -180,7 +198,7 @@ export function EventDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="glass fixed top-auto bottom-0 left-0 right-0 z-50 w-full translate-x-0 translate-y-0 border border-zinc-200/50 bg-white/90 p-0 gap-0 shadow-2xl backdrop-blur-2xl rounded-t-3xl overflow-hidden max-h-[calc(100dvh-1rem)] dark:border-white/10 dark:bg-zinc-950/90 sm:top-1/2 sm:bottom-auto sm:left-1/2 sm:right-auto sm:w-full sm:max-w-[560px] sm:-translate-x-1/2 sm:-translate-y-1/2 sm:rounded-2xl sm:max-h-[90dvh] data-[state=closed]:slide-out-to-bottom sm:data-[state=closed]:slide-out-to-bottom-0 data-[state=open]:slide-in-from-bottom sm:data-[state=open]:slide-in-from-bottom-0">
-        <DialogHeader className="px-6 py-5 border-b border-zinc-100 dark:border-white/5 bg-zinc-50/50 dark:bg-black/20">
+        <DialogHeader className="px-4 py-5 border-b border-zinc-100 dark:border-white/5 bg-zinc-50/50 dark:bg-black/20 sm:px-6">
           <DialogTitle className="text-xl font-semibold flex items-center gap-2">
             <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
               <CalendarIcon className="w-4 h-4 text-primary" />
@@ -194,11 +212,11 @@ export function EventDialog({
           <div className="w-10 h-1.5 bg-zinc-300 dark:bg-zinc-700 rounded-full" />
         </div>
 
-        <div className="px-6 py-5 overflow-y-auto max-h-[70dvh] overscroll-contain">
+        <div className="px-4 py-5 overflow-y-auto max-h-[70dvh] overscroll-contain sm:px-6">
           {/* Template Selector */}
           {!formData.id && (
             <div className="mb-4">
-              <Label className="text-zinc-600 dark:text-zinc-400 flex items-center gap-1.5 mb-2">
+              <Label className={`${fieldLabelClassName} mb-2`}>
                 <Bookmark className="w-3.5 h-3.5" /> {t("calendar.quickTemplate")}
               </Label>
               <div className="flex flex-wrap gap-1.5">
@@ -297,7 +315,7 @@ export function EventDialog({
             </div>
 
             <div className="grid gap-2">
-              <Label htmlFor="locationUrl" className="flex items-center gap-1.5">
+              <Label htmlFor="locationUrl" className={fieldLabelClassName}>
                 <Link className="size-4" /> {t("calendar.meetingLink")}
               </Label>
               <Input
@@ -366,69 +384,96 @@ export function EventDialog({
             </div>
             
             <div className="grid gap-2">
-              <Label htmlFor="category" className="text-zinc-600 dark:text-zinc-400 flex items-center gap-1.5">
+              <Label id="category-label" htmlFor="category" className={fieldLabelClassName}>
                 <Tag className="w-3.5 h-3.5" /> {t("calendar.category")}
               </Label>
-              <select
-                id="category"
-                value={formData.category || ""}
-                onChange={(e) => setFormData({ ...formData, category: e.target.value || null })}
-                  className="min-h-11 w-full rounded-md border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-black/20 px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary sm:min-h-10"
+              <Select
+                value={formData.category || NO_CATEGORY_VALUE}
+                onValueChange={(value) => setFormData({
+                  ...formData,
+                  category: value === NO_CATEGORY_VALUE ? null : value,
+                })}
               >
-                <option value="">{t("calendar.noCategory")}</option>
-                {CATEGORY_OPTIONS.map((cat) => (
-                  <option key={cat.key} value={cat.key}>
-                    {cat.emoji} {cat.label}
-                  </option>
-                ))}
-              </select>
+                <SelectTrigger
+                  id="category"
+                  aria-labelledby="category-label"
+                  data-testid="category-select-trigger"
+                  className={selectTriggerClassName}
+                >
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent align="start" className={selectContentClassName}>
+                  <SelectItem value={NO_CATEGORY_VALUE}>{t("calendar.noCategory")}</SelectItem>
+                  {CATEGORY_OPTIONS.map((cat) => (
+                    <SelectItem key={cat.key} value={cat.key}>
+                      {cat.emoji} {cat.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div className="grid gap-2">
-                <Label htmlFor="priority" className="flex items-center gap-1.5">
+                <Label id="priority-label" htmlFor="priority" className={fieldLabelClassName}>
                   <Flag className="size-4" /> {t("calendar.priority")}
                 </Label>
-                <select
-                  id="priority"
+                <Select
                   value={formData.priority || "normal"}
-                  onChange={(e) => setFormData({
+                  onValueChange={(value) => setFormData({
                     ...formData,
-                    priority: e.target.value as EventData["priority"],
+                    priority: value as EventData["priority"],
                   })}
-                  className="min-h-11 rounded-md border border-input bg-background px-3 text-sm sm:min-h-10"
                 >
-                  <option value="low">{t("calendar.priorityLow")}</option>
-                  <option value="normal">{t("calendar.priorityNormal")}</option>
-                  <option value="important">{t("calendar.priorityImportant")}</option>
-                </select>
+                  <SelectTrigger
+                    id="priority"
+                    aria-labelledby="priority-label"
+                    data-testid="priority-select-trigger"
+                    className={selectTriggerClassName}
+                  >
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent align="start" className={selectContentClassName}>
+                    <SelectItem value="low">{t("calendar.priorityLow")}</SelectItem>
+                    <SelectItem value="normal">{t("calendar.priorityNormal")}</SelectItem>
+                    <SelectItem value="important">{t("calendar.priorityImportant")}</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="reminder" className="flex items-center gap-1.5">
+                <Label id="reminder-label" htmlFor="reminder" className={fieldLabelClassName}>
                   <Bell className="size-4" /> {t("calendar.reminder")}
                 </Label>
-                <select
-                  id="reminder"
-                  value={formData.reminder_minutes ?? ""}
-                  onChange={(e) => setFormData({
+                <Select
+                  value={formData.reminder_minutes == null ? NO_REMINDER_VALUE : String(formData.reminder_minutes)}
+                  onValueChange={(value) => setFormData({
                     ...formData,
-                    reminder_minutes: e.target.value ? Number(e.target.value) : null,
+                    reminder_minutes: value === NO_REMINDER_VALUE ? null : Number(value),
                   })}
-                  className="min-h-11 rounded-md border border-input bg-background px-3 text-sm sm:min-h-10"
                 >
-                  <option value="">{t("calendar.reminderNone")}</option>
-                  <option value="0">{t("calendar.reminderAtStart")}</option>
-                  <option value="5">{t("calendar.reminder5")}</option>
-                  <option value="15">{t("calendar.reminder15")}</option>
-                  <option value="30">{t("calendar.reminder30")}</option>
-                  <option value="60">{t("calendar.reminder60")}</option>
-                  <option value="1440">{t("calendar.reminderDay")}</option>
-                </select>
+                  <SelectTrigger
+                    id="reminder"
+                    aria-labelledby="reminder-label"
+                    data-testid="reminder-select-trigger"
+                    className={selectTriggerClassName}
+                  >
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent align="start" className={selectContentClassName}>
+                    <SelectItem value={NO_REMINDER_VALUE}>{t("calendar.reminderNone")}</SelectItem>
+                    <SelectItem value="0">{t("calendar.reminderAtStart")}</SelectItem>
+                    <SelectItem value="5">{t("calendar.reminder5")}</SelectItem>
+                    <SelectItem value="15">{t("calendar.reminder15")}</SelectItem>
+                    <SelectItem value="30">{t("calendar.reminder30")}</SelectItem>
+                    <SelectItem value="60">{t("calendar.reminder60")}</SelectItem>
+                    <SelectItem value="1440">{t("calendar.reminderDay")}</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
 
             <div className="grid gap-2">
-              <Label htmlFor="tags" className="flex items-center gap-1.5">
+              <Label htmlFor="tags" className={fieldLabelClassName}>
                 <Tag className="size-4" /> {t("calendar.tags")}
               </Label>
               <Input
@@ -443,7 +488,7 @@ export function EventDialog({
             </div>
 
             <div className="grid gap-2">
-              <Label htmlFor="participants" className="text-zinc-600 dark:text-zinc-400 flex items-center gap-1.5">
+              <Label htmlFor="participants" className={fieldLabelClassName}>
                 <Users className="w-3.5 h-3.5" /> {t("calendar.participantsOptional")}
               </Label>
               <Input

@@ -359,7 +359,7 @@ export function WeeklyCalendar({
         </div>
 
         {/* Action Row: Today, View Selector, Add Event */}
-        <div className="flex flex-row items-center justify-between sm:justify-start gap-2 w-full">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-start sm:gap-2 w-full">
           {/* Desktop Title & Prev/Next (Hidden on mobile) */}
           <div className="hidden sm:flex items-center gap-3 mr-auto">
             <div className="flex items-center gap-1 bg-slate-100 dark:bg-zinc-800 p-0.5 rounded-xl border border-slate-200/50 dark:border-white/5 shrink-0">
@@ -383,7 +383,7 @@ export function WeeklyCalendar({
             </h3>
           </div>
 
-          <div className="flex items-center justify-between sm:justify-end gap-2 w-full sm:w-auto overflow-x-auto scrollbar-hide">
+          <div className="flex items-center gap-2 w-full overflow-x-auto scrollbar-hide sm:w-auto sm:justify-end sm:overflow-visible">
             <div className="flex items-center gap-1.5 shrink-0">
               <button
                 type="button"
@@ -416,20 +416,19 @@ export function WeeklyCalendar({
                 })}
               </div>
             </div>
-
-            {onAddEventClick && (
-              <button
-                type="button"
-                onClick={onAddEventClick}
-                data-testid="calendar-add-event"
-                className="flex shrink-0 min-h-11 sm:min-h-8 items-center justify-center gap-1.5 px-3 sm:px-4 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white rounded-xl text-xs font-semibold shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all cursor-pointer"
-              >
-                <Plus className="w-4 h-4" />
-                <span className="hidden sm:inline">Tambah Event</span>
-                <span className="inline sm:hidden">Tambah</span>
-              </button>
-            )}
           </div>
+
+          {onAddEventClick && (
+            <button
+              type="button"
+              onClick={onAddEventClick}
+              data-testid="calendar-add-event"
+              className="flex min-h-11 w-full shrink-0 items-center justify-center gap-1.5 px-4 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white rounded-xl text-xs font-semibold shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all cursor-pointer sm:min-h-8 sm:w-auto"
+            >
+              <Plus className="w-4 h-4" />
+              <span>Tambah Event</span>
+            </button>
+          )}
         </div>
       </div>
 
@@ -523,7 +522,11 @@ export function WeeklyCalendar({
       </div>
 
       {/* Calendar Area - Robust height (no brittle 100vh calc) */}
-      <div className="bg-transparent rounded-lg w-full flex flex-col min-h-[520px] h-[620px] max-w-full overflow-x-auto lg:h-[min(680px,calc(100dvh-240px))]">
+      <div
+        data-testid="calendar-shell"
+        data-calendar-view={currentView}
+        className="timeora-calendar-shell bg-transparent rounded-lg w-full flex flex-col min-h-[560px] h-[min(680px,calc(100dvh-260px))] max-w-full overflow-x-auto overscroll-x-contain pb-2 sm:h-[620px] lg:h-[min(680px,calc(100dvh-240px))]"
+      >
         <FullCalendar
           ref={calendarRef}
           plugins={[timeGridPlugin, dayGridPlugin, interactionPlugin]}
@@ -535,7 +538,8 @@ export function WeeklyCalendar({
           editable={true}
           selectable={true}
           selectMirror={true}
-          dayMaxEvents={currentView === "dayGridMonth" ? 1 : true}
+          dayMaxEvents={currentView === "dayGridMonth" ? (isMobile ? 2 : true) : true}
+          fixedWeekCount={false}
           events={filteredEvents}
           dateClick={onDateClick}
           eventClick={onEventClick}
@@ -563,6 +567,13 @@ export function WeeklyCalendar({
           height="100%"
           expandRows={true}
           nowIndicator={true}
+          eventDisplay="block"
+          dayHeaderFormat={{ weekday: "short" }}
+          eventTimeFormat={{
+            hour: "2-digit",
+            minute: "2-digit",
+            meridiem: false,
+          }}
           eventClassNames={() => {
             return `cursor-pointer transition-transform hover:scale-[1.02] shadow-sm !border-l-[3px]`;
           }}

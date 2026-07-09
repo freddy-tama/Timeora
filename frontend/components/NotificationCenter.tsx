@@ -60,9 +60,7 @@ function toReminderEvent(event: EventInput): ReminderEvent | null {
 
 export function NotificationCenter({ events }: { events: EventInput[] }) {
   const { t } = useI18n();
-  const [permission, setPermission] = useState<ReminderPermissionState>(() =>
-    typeof window === "undefined" ? "default" : readPermission(),
-  );
+  const [permission, setPermission] = useState<ReminderPermissionState>("default");
   const [fallbacks, setFallbacks] = useState<ReminderDelivery[]>([]);
   const schedulerRef = useRef<ReturnType<typeof createReminderScheduler> | null>(null);
 
@@ -72,6 +70,10 @@ export function NotificationCenter({ events }: { events: EventInput[] }) {
   );
 
   useEffect(() => {
+    const permissionTimer = window.setTimeout(() => {
+      setPermission(readPermission());
+    }, 0);
+
     schedulerRef.current = createReminderScheduler({
       fallback: (delivery) => {
         setFallbacks((current) => {
@@ -81,7 +83,10 @@ export function NotificationCenter({ events }: { events: EventInput[] }) {
       },
     });
 
-    return () => schedulerRef.current?.cancel();
+    return () => {
+      window.clearTimeout(permissionTimer);
+      schedulerRef.current?.cancel();
+    };
   }, []);
 
   useEffect(() => {

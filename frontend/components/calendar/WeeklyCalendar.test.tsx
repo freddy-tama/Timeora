@@ -130,6 +130,33 @@ describe("WeeklyCalendar", () => {
     expect(screen.getByRole("button", { name: /Other1/ })).toBeVisible();
   });
 
+  it("keeps mobile calendar controls from clipping and exposes a responsive calendar shell", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <WeeklyCalendar
+        events={[]}
+        onDateClick={noop}
+        onEventClick={noop}
+        onEventDrop={noop}
+        onEventResize={noop}
+        onAddEventClick={noop}
+      />,
+    );
+
+    const addButton = screen.getByTestId("calendar-add-event");
+    expect(addButton).toHaveClass("w-full", "sm:w-auto");
+    expect(addButton).toHaveTextContent("Tambah Event");
+
+    const calendarShell = screen.getByTestId("calendar-shell");
+    expect(calendarShell).toHaveClass("timeora-calendar-shell", "overflow-x-auto");
+    expect(calendarShell).toHaveAttribute("data-calendar-view", "timeGridWeek");
+
+    await user.click(screen.getByRole("button", { name: "Month" }));
+
+    expect(calendarShell).toHaveAttribute("data-calendar-view", "dayGridMonth");
+  });
+
   it("normalizes legacy categories from saved presets", async () => {
     const user = userEvent.setup();
     localStorage.setItem("timeora_category_presets", JSON.stringify({ Legacy: ["work"] }));

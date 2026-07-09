@@ -19,11 +19,30 @@ describe("EventDialog", () => {
 
     expect(dialog.className).not.toContain("sm:static");
     expect(dialog.className).toContain("sm:-translate-x-1/2");
-    expect(screen.getByLabelText("Deskripsi")).toBeVisible();
+    expect(screen.getByLabelText("Description")).toBeVisible();
     expect(screen.getByLabelText("Meeting link")).toBeVisible();
     expect(screen.getByLabelText("Priority")).toBeVisible();
     expect(screen.getByLabelText("Reminder")).toBeVisible();
     expect(screen.getByLabelText("Tags")).toBeVisible();
+  });
+
+  it("uses aligned themed select controls for task metadata fields", () => {
+    render(
+      <EventDialog
+        open
+        onOpenChange={vi.fn()}
+        initialData={null}
+        onSave={vi.fn()}
+      />,
+    );
+
+    expect(screen.getByTestId("category-select-trigger")).toHaveClass("timeora-select-trigger", "w-full", "justify-between");
+    expect(screen.getByTestId("priority-select-trigger")).toHaveClass("timeora-select-trigger", "w-full", "justify-between");
+    expect(screen.getByTestId("reminder-select-trigger")).toHaveClass("timeora-select-trigger", "w-full", "justify-between");
+
+    for (const labelText of ["Category", "Priority", "Reminder"]) {
+      expect(screen.getByText(labelText).closest("label")).toHaveClass("timeora-field-label", "text-left");
+    }
   });
 
   it("does not save blank-looking titles", async () => {
@@ -38,8 +57,8 @@ describe("EventDialog", () => {
       />,
     );
 
-    await user.type(screen.getByLabelText("Judul Event"), "   ");
-    await user.click(screen.getByRole("button", { name: "Simpan Event" }));
+    await user.type(screen.getByLabelText("Event title"), "   ");
+    await user.click(screen.getByRole("button", { name: "Save Event" }));
 
     expect(onSave).not.toHaveBeenCalled();
   });
@@ -55,8 +74,8 @@ describe("EventDialog", () => {
       />,
     );
 
-    const titleInput = screen.getByLabelText("Judul Event");
-    const saveButton = screen.getByRole("button", { name: "Simpan Event" });
+    const titleInput = screen.getByLabelText("Event title");
+    const saveButton = screen.getByRole("button", { name: "Save Event" });
 
     expect(saveButton).toBeDisabled();
 
@@ -81,12 +100,12 @@ describe("EventDialog", () => {
       />,
     );
 
-    await user.type(screen.getByLabelText("Judul Event"), "Late deployment");
-    await user.clear(screen.getByLabelText("Mulai"));
-    await user.type(screen.getByLabelText("Mulai"), "23:00");
-    await user.clear(screen.getByLabelText("Selesai"));
-    await user.type(screen.getByLabelText("Selesai"), "00:30");
-    await user.click(screen.getByRole("button", { name: "Simpan Event" }));
+    await user.type(screen.getByLabelText("Event title"), "Late deployment");
+    await user.clear(screen.getByLabelText("Start"));
+    await user.type(screen.getByLabelText("Start"), "23:00");
+    await user.clear(screen.getByLabelText("End"));
+    await user.type(screen.getByLabelText("End"), "00:30");
+    await user.click(screen.getByRole("button", { name: "Save Event" }));
 
     expect(onSave).toHaveBeenCalledWith(expect.objectContaining({
       start_time: "23:00:00",
@@ -106,15 +125,15 @@ describe("EventDialog", () => {
       />,
     );
 
-    await user.type(screen.getByLabelText("Judul Event"), "Moved planning");
-    await user.clear(screen.getByLabelText("Mulai"));
-    await user.type(screen.getByLabelText("Mulai"), "11:00");
-    await user.click(screen.getByRole("button", { name: "Simpan Event" }));
+    await user.type(screen.getByLabelText("Event title"), "Moved planning");
+    await user.clear(screen.getByLabelText("Start"));
+    await user.type(screen.getByLabelText("Start"), "11:00");
+    await user.click(screen.getByRole("button", { name: "Save Event" }));
 
     expect(onSave).toHaveBeenCalledWith(expect.objectContaining({
       start_time: "11:00:00",
       duration_minutes: 60,
     }));
-    expect(screen.getByLabelText("Selesai")).toHaveValue("12:00");
+    expect(screen.getByLabelText("End")).toHaveValue("12:00");
   });
 });
